@@ -1,0 +1,317 @@
+---
+title: "Meta_analysis_cleaning"
+author: "Rose Graves"
+date: "3/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(stringr)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+```
+
+
+### Cleaning
+
+Binding all the datasets together and dropping any NAs.
+
+```{r}
+
+df <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", 
+    sheet = "KelseyEffectSizes")
+
+df1 <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", 
+    sheet = "RoseEffectSizes")
+df1 = df1 %>% drop_na(`Study Title`, `Year Published`)
+
+df2 <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", 
+    sheet = "JJEffectSizes")
+df2 = df2 %>% drop_na(`Study Title`, `Year Published`)
+df2 = df2[,1:23]
+
+df3 <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", 
+    sheet = "TaraEffectSizes")
+df3 = df3 %>% drop_na(`Study Title`, `Year Published`)
+
+
+df4 <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", 
+    sheet = "SiyuanEffectSizes")
+df4 = df4[1:54,]
+df4 = df4 %>% drop_na(`Study Title`, `Year Published`)
+
+df = rbind(df, df1, df2, df3, df4)
+
+```
+
+# These are the following sub-group analyses that we are planning on conducting. 
+
+If there are less than 20 arctiles in a group then we dropped the article. 
+
+**The sub-groups that we are left with:**
+
+*KELSEY-student vs nonstudent*
+
+*KELSEY-gender*
+
+*KELSEY-age as continuous regressor*
+
+*KELSEY-when you show both frames? less framing effects when you show both? verify. between versus within manipulation differences*
+
+
+
+*ROSE-death vs non-death (or mortal vs nonmortal)*
+
+*ROSE-ADP vs other?*
+
+**The articles that we had to drop due to a lack of observations or infromation proved are:**
+
+ROSE-expertise? (not enough info)
+
+ROSE-education level (dont have this info)
+
+KELSEY-online vs in-person studies (not enough info)
+
+ROSE-likert scale vs binary choice
+
+KELSEY-individual difference variables from excel sheet that are reported (i.e. cognitive tests, WM, etc.)
+
+
+##### Cleaning up the moral judgement category into the various types of moral senarios
+
+```{r}
+
+#---- Moral Judgement
+
+df <- df %>% 
+    mutate_all(funs(str_replace(., "Asian Disease Problem", "ADP"))) %>%
+    mutate_all(funs(str_replace(., "Similar to ADP", "ADPModif"))) %>%
+    mutate_all(funs(str_replace(., "similar to ADP", "ADPModif"))) %>%
+    mutate_all(funs(str_replace(., "Modified Asian Disease Problem", "ADPModif")))%>%
+    mutate_all(funs(str_replace(., "ADP-like for human like outcomes", "ADPModif")))%>%
+    mutate_all(funs(str_replace(., "ADP-like for human lifes", "ADPModif")))%>%
+    mutate_all(funs(str_replace(., "ADP-like, but smallpox", "ADPModif")))%>%
+    mutate_all(funs(str_replace(., "ADP-like war problem", "ADPModif")))%>%
+    mutate_all(funs(str_replace(., "4 types of ADP-like problems", "ADPModif")))%>%
+    mutate_all(funs(str_replace(., "ADP-like human life", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "ADP-like human life", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "life saving risky scenario", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "Modified ADP (replace disease with war)", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "Modified ADP (replace with AIDS victims)", "ADPModif")))%>%
+  #mutate_all(funs(str_replace(., "ADP 6000", "ADP")))%>%
+  mutate_all(funs(str_replace(., "ADP 600", "ADP")))%>%
+  #mutate_all(funs(str_replace(., "ADP 60", "ADP")))%>%
+  #mutate_all(funs(str_replace(., "ADP 6", "ADP")))%>%
+  #mutate_all(funs(str_replace(., "ADP 6,000,000", "ADP")))%>%
+  #mutate_all(funs(str_replace(., "ADP 9,000", "ADP")))%>%
+  #mutate_all(funs(str_replace(., "ADP 90", "ADP")))%>%
+  mutate_all(funs(str_replace(., "Asian Disease", "ADP")))%>%
+  #mutate_all(funs(str_replace(., "ADP ( w/ 1-2 kin)")))%>%
+  #mutate_all(funs(str_replace(., "ADP (w/ 3-6 kin)", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "Fatal Disease Problem", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "ADP (w/ 3-6 kin)", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "ADP-like (Coal Mining Problem 1)", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "ADP 6 relatives", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "ADP-like (ADP, civil defense problem, and cancer treatment problem)", "ADPModif")))%>% mutate_all(funs(str_replace(., "Asian Disease & Modified Asian Disease", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "Asian DIsease Problem Unspecified #", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "Asian DIsease problem", "ADP")))%>%
+  mutate_all(funs(str_replace(., "Modified ADP", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "ADP & ADPModif", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "West Nile Virus task (augmented ADP)", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "ADP (augmented)", "ADPModif")))%>%
+  mutate_all(funs(str_replace(., "ADP-augmented", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "West Nile Virus task (augmented ADP)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP-like military example", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP-like cancer scenario", "ADPModifMedical"))) %>%
+  mutate_all(funs(str_replace(., "ADP-like for medical decision", "ADPModifMedical"))) %>%
+  mutate_all(funs(str_replace(., "ADP-like for lives", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADPModif (replace disease with war)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADPModif (replace with AIDS victims)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP0", "ADP 6000"))) %>%
+  mutate_all(funs(str_replace(., "ADP-like (Coal Mining Problem 1)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP & Modified Asian Disease", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "Trolley Problem 15", "Trolly Problem"))) %>%
+  mutate_all(funs(str_replace(., "Trolley Problem 5", "Trolly Problem"))) %>%
+  mutate_all(funs(str_replace(., "trolly problems", "Trolly Problem"))) %>%
+  mutate_all(funs(str_replace(., "ADP-like military example", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP-like military example", "ADPModif")))  %>%
+  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif")))  %>%
+  mutate_all(funs(str_replace(., "ADP-like (Coal Mining Problem 1)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP and oil tanker ADP-like problem", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADPModif (replace with AIDS victims)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADPModif (replace disease with war)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP ( w/ 1-2 kin)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP (w/ 3-6 kin)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP 120", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP-like (Coal Mining Problem 1)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "West Nile Virus task (augmented ADP)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif"))) %>%
+  mutate_all(funs(str_replace(., "ADP (augmented)", "ADPModif")))
+
+
+
+
+unique(df$`Moral Judgment`)
+
+```
+
+##### Making age, sd age and percentage male into numerical variables
+
+```{r}
+df$`mean age` = as.numeric(df$`mean age`)
+df$`std age` = as.numeric(df$`std age`)
+df$`Proportion Male Subs` = as.numeric(df$`Proportion Male Subs`)
+```
+
+#### Cleaning the methods (between, within, NA)
+
+```{r}
+
+
+df <- df %>% 
+    mutate_all(funs(str_replace(., "2x4 between subjects", "between-subject")))%>%
+    mutate_all(funs(str_replace(., "between subjects by frame (then within subjects by need condition)", "between-subjects"))) %>%
+    mutate_all(funs(str_replace(., "between subjects by frame", "between-subject"))) %>%
+    mutate_all(funs(str_replace(., "2x2x2 between subjects", "between-subject"))) %>%
+   mutate_all(funs(str_replace(., "2x2 between subjects", "between-subject"))) %>%
+    mutate_all(funs(str_replace(., "between subjects 2 - level", "between-subject"))) %>%
+    mutate_all(funs(str_replace(., "between-subject - forced choice", "between-subject"))) %>%
+    mutate_all(funs(str_replace(., "between-subject - with no-choice option", "between-subject"))) %>%
+    mutate_all(funs(str_replace(., "between subjects", "between-subject"))) %>%
+    mutate_all(funs(str_replace(., "between-subjectss", "between-subject"))) 
+
+
+df <- df%>%
+    mutate_all(funs(str_replace(., "within-subject - with no-chioce option", "within-subject"))) %>%
+    mutate_all(funs(str_replace(., "within-subjects 2- level (gain/loss)", "within-subject"))) %>%
+    mutate_all(funs(str_replace(., "within-subjects 2-level", "within-subject"))) %>%
+    mutate_all(funs(str_replace(., "within-subject - forced option", "within-subject"))) %>%
+    mutate_all(funs(str_replace(., "within subjects", "within-subject"))) %>%
+    mutate_all(funs(str_replace(., "within-subject", "within-subject"))) %>%
+    mutate_all(funs(str_replace(., "Within subjects", "within-subject"))) %>%
+    mutate_all(funs(str_replace(., "within Subjects", "within-subject"))) %>%
+    mutate_all(funs(str_replace(., "Within Subjects", "within-subject")))  %>%
+    mutate_all(funs(str_replace(., "within-subjects 2- level (gain/loss)", "within-subject"))) 
+
+
+df[ df == "unclear" ] <- NA
+df[ df == "2x2 (between) x 2x3 (within) subjects" ] <- NA
+df[ df == "2x2 between - within subjects" ] <- NA
+
+
+unique(df$`Research Design`)
+
+```
+
+##### Cleaning the types of samples present
+
+```{r}
+#----- Subjets
+  df <- df %>% 
+  mutate_all(funs(str_replace(.,"college students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"School Psychology Student", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergrads in introductory psych course catered towards biomedical students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergrads in general introductory psych course", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Education Admin Student", "students"))) %>%
+  mutate_all(funs(str_replace(.,"university students in Singapore", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students from Amsterdam", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (male sample)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (female sample)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate Students from the US", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate Students from the UK", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate Students (Public university)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"University Students in Bangkok", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate Students at a university in China", "students"))) %>%
+  mutate_all(funs(str_replace(.,"university students in Singapore", "students"))) %>%
+  mutate_all(funs(str_replace(.,"English Speaking Students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"undergrad students (presumed, unspecifed)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"female undegrad students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"female undergrad students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"University of Tromso, Norway undergrad students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"University of Oslo undergrad students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergrads from large mid-western universities", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Chinese students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"chinese students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"German students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (male sample)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (female sample)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate students from Military Universities in China", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Military Undergraduate students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate students (Public university)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Native Speakers of English studying in Paris", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduates from University of Toronto", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Univeristy of Washington Undergradute students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undegraduates from Universities in Beijing", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Chinese College students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (unspecified)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (presumed, unspecifed)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Psychology students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"University students from Korea", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"undergrad students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"grad students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"undergraduates", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Australian university students and faculty and students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (presumed, unspecifed)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (unspecified)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Columbia university students and employees", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Canadian undergradudate students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Psychology students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduates from Univeristy of Toronto", "students"))) %>%
+  mutate_all(funs(str_replace(.,"University students from Korea", "students"))) %>%
+  mutate_all(funs(str_replace(.,"University students from the US", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Chinese College students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Univeristy of Washington Undergradute students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students at a univeristy in China", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate students (Public university)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Military Undergraduate students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate students from Military Universities in China", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (male sample)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (female sample)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Chinese College students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"College students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Undergraduate students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Chinese students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"University students", "students"))) %>%
+  mutate_all(funs(str_replace(.,"Student", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (Public university)", "students"))) %>%
+  mutate_all(funs(str_replace(.,"students (presumed, unspecifed)", "students"))) %>% mutate_all(funs(str_replace(.,"students (unspecified)", "students"))) 
+
+
+
+
+unique(df$`Type of Sample`)
+
+
+
+```
+
+##### Turning the participant pool into a binary vairble (1 = student , 0 = other)
+
+```{r}
+
+df = df %>%mutate( student_bin = ifelse(`Type of Sample` == "students", 1, 0))
+
+```
+
+
+
+##### Making the final data-set
+
+
+```{r}
+save(df, file = "/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/df.RData")
+
+```
+
+
+
+
