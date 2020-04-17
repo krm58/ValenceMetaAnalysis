@@ -38,13 +38,28 @@ df <- dplyr::rename(df, participants = `Type of Sample`)
 df <- dplyr::rename(df, moralJudge = `Moral Judgment`)
 df <- dplyr:: rename(df, design = `Research Design`)
 df$StudyID <- paste(word(df$Authors, 1), df$PubYear, rownames(df),sep = '_')
-
+df$lowCI <- as.numeric(df$lowCI)
+df$highCI <- as.numeric(df$highCI)
+df$ES <- as.numeric(df$ES)
 df <-df[!is.na(df$ES),]
+df <-df[!is.na(df$lowCI),]
 
-#-------Make some of the columns into the correct type 
-df$MeanAge = as.numeric(df$MeanAge)
-df$SdAge = as.numeric(df$SdAge)
-df$PropMales = as.numeric(df$PropMales)
+#For now, just deal with absolute value of effect sizes
+#First, we have to swap the low and high CIs for just the negative ES
+negES <- which(df$ES < 0)
+v1 <- df$lowCI[negES]
+v2 <- df$highCI[negES]
+
+df$lowCI[negES] <- v2
+df$highCI[negES] <- v1
+
+df$ES <- abs(df$ES)
+df$lowCI <- abs(df$lowCI)
+df$highCI <- abs(df$highCI)
+
+probsigns <- which(df$ES <= df$lowCI)
+df[probsigns,] <- transform(df[probsigns,], lowCI = ifelse(abs(ES) < abs(lowCI), -1*lowCI, lowCI))
+
 
 #-------Creating a new colmun indiacating if the participant sample is a student (1) or a not (0)
 df <- df%>% dplyr::mutate(student_bin = ifelse( !grepl('Student|Students|student|students|undergrads|Undergraduates|Undegraduates|Undergrads', participants),0,1))
@@ -150,5 +165,13 @@ df <- df%>%
 df[ df == "within-subjects 2- level (gain/loss)" ] <- "within-subject" 
 
 df <- df%>% dplyr::mutate(betweeen_within_bin = ifelse(design =="between-subject", 1,0))
+
+#----- Make Things Numeric Again
+df$lowCI <- as.numeric(df$lowCI)
+df$highCI <- as.numeric(df$highCI)
+df$ES <- as.numeric(df$ES)
+df$MeanAge = as.numeric(df$MeanAge)
+df$SdAge = as.numeric(df$SdAge)
+df$PropMales = as.numeric(df$PropMales)
 
 save(df, file = "/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/df.RData")
