@@ -4,19 +4,18 @@ library(dplyr)
 library(readr)
 library(readxl)
 
-
 #-------Binding All of the Datasets Together
 
-Kdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/ValenceFramingMetaAnalysis.xlsx", sheet = "KelseyEffectSizes")
+Kdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "KelseyEffectSizes")
 
-Rdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/ValenceFramingMetaAnalysis.xlsx", sheet = "RoseEffectSizes")
+Rdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "RoseEffectSizes")
 
-JJdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/ValenceFramingMetaAnalysis.xlsx", sheet = "JJEffectSizes")
+JJdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "JJEffectSizes")
 JJdf = JJdf[,1:28]
 
-Tdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/ValenceFramingMetaAnalysis.xlsx", sheet = "TaraEffectSizes")
+Tdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "TaraEffectSizes")
 
-Sdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/ValenceFramingMetaAnalysis.xlsx", sheet = "SiyuanEffectSizes")
+Sdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "SiyuanEffectSizes")
 Sdf = Sdf[1:54,]
 
 df = rbind(Kdf, Rdf, JJdf, Tdf, Sdf)
@@ -186,5 +185,12 @@ df = df %>% mutate(ESTrue = ifelse((ES <=0 & Consistent ==1), df$ES, ifelse((ES>
 
 df = df %>% mutate(lowCITrue = ifelse(ESTrue <0, -(df$highCI), lowCI))
 df = df %>% mutate(highCITrue = ifelse(ESTrue <0, -(df$lowCI), highCI))
+
+#-------- lol now switch it back 
+
+
+df = df %>% mutate(ESTrue = -ESTrue, lowCITrue = -highCITrue, highCITrue = -lowCITrue)
+
+
 
 save(df, file = "/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/df.RData")
