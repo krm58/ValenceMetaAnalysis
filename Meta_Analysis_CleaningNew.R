@@ -11,7 +11,7 @@ Kdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philos
 Rdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "RoseEffectSizes")
 
 JJdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "JJEffectSizes")
-JJdf = JJdf[,1:28]
+JJdf = JJdf[,1:29]
 
 Tdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "TaraEffectSizes")
 
@@ -191,9 +191,9 @@ df = df %>% mutate(highCITrue = ifelse(ESTrue <0, -(df$lowCI), highCI))
 
 df = df %>% mutate(ESTrue = -ESTrue, lowCITrue = -highCITrue, highCITrue = -lowCITrue)
 
-df[191, 2] = '1993' #need to add the publication data to 'Tindale' entry
-df[9,28] = "1" #Stark 2017 article is a main effect
-df[134,10] = "306" #this study actually had 306 subjects, not 360
-df[135,10] = "306"
+df[189, 2] = '1993' #need to add the publication data to 'Tindale' entry
+#df[9,28] = "1" #Stark 2017 article is a main effect
+df[134,11] = "306" #this study actually had 306 subjects, not 360
+df[133,11] = "306"
 
 save(df, file = "/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/df.RData")
