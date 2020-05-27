@@ -9,11 +9,11 @@ library(ggplot2)
 
 load("C:/Users/krmcd/OneDrive - Duke University/Duke/Walter Sinnot-Armstrong/Meta Analysis/Analysis_Publication/ValenceMetaAnalysis-master/df.RData")
 
-#Manual cleaning edits to df
-df[191, 2] = '1993' #need to add the publication data to 'Tindale' entry
-df[9,28] = "1" #Stark 2017 article is a main effect
-df[134,10] = "306" #this study actually had 306 subjects, not 360
-df[135,10] = "306"
+#Manual cleaning edits to df --> these were updated on github df on 5/13
+#df[191, 2] = '1993' #need to add the publication data to 'Tindale' entry
+#[9,28] = "1" #Stark 2017 article is a main effect
+#df[134,10] = "306" #this study actually had 306 subjects, not 360
+#df[135,10] = "306"
 
 #trimdf <- df[c(1,3,4,28)]
 
@@ -55,17 +55,6 @@ ggplot(data=trimdf, aes(x=PubYear)) + geom_histogram() +
   theme(plot.title = element_text(hjust = 0.5)) +
   labs(x="Year of Publication", y="Number of Publications")
 
-spot.outliers.random<-function(data){
-  data<-data
-  StudyID<-data$studlab
-  lowerci<-data$lower
-  upperci<-data$upper
-  m.outliers<-data.frame(StudyID,lowerci,upperci)
-  te.lower<-data$lower.random
-  te.upper<-data$upper.random
-  dplyr::filter(m.outliers,upperci < te.lower)
-  dplyr::filter(m.outliers,lowerci > te.upper)
-}
 
 #fixed effects model: pooled ES = 0.4535, p-value < 0.0001
 m_FE <- metagen(ES,
@@ -81,6 +70,8 @@ m_FE <- metagen(ES,
 
 #random effects model (the one we will use): pooled ES = 0.4996, p-value < 0.0001
 #the pooled effect size here is in line with the magnitude reported in Steiger & Kühberger, 2018!
+df$MortalVnonMortal <- as.numeric(df$MortalVnonMortal)
+df$MortalVnonMortal <- factor(df$MortalVnonMortal)
 m_RE <- metagen(ES,
                 data=df,
                 lower = lowCI,
@@ -93,28 +84,10 @@ m_RE <- metagen(ES,
                 prediction=TRUE,
                 sm="SMD")
 
-#Do outliers drive this effect?
-outliersdf <- spot.outliers.random(data=m_RE)
-#make new RE meta analysis model without the outliers
-newdf <- df[!m_RE$studlab %in% c(as.character(outliersdf$StudyID)),]
-#Total RE analysis without outliers:
-#effect size = 0.4168, p<0.0001, still significant heterogeneity though
-m_RE.nooutliers <- metagen(ES,
-                                        data=newdf,
-                                        lower = lowCI,
-                                        upper = highCI,
-                                        studlab=paste(StudyID),
-                                        comb.fixed = FALSE,
-                                        comb.random = TRUE,
-                                        method.tau = "SJ",
-                                        hakn = TRUE,
-                                        prediction=TRUE,
-                                        sm="SMD")
-
 
 # I'm responsbile for the following subgroups:
 # .	KELSEY - student vs nonstudent
-# .	KELSEY - age as continuous regressor
+# .	KELSEY - age as continuous regressor -- turns out 
 # .	KELSEY - gender
 # .	KELSEY - when you show both frames? less framing effects when you show both? verify. between versus within manipulation differences
 
@@ -140,27 +113,6 @@ m_studentsubgroup <- metagen(ES,
                              prediction=TRUE,
                              sm="SMD")
 
-#Do outliers drive this effect?
-outliersdf <- spot.outliers.random(data=m_studentsubgroup)
-newdf <- df[!m_RE$studlab %in% c(as.character(outliersdf$StudyID)),]
-#make new RE meta analysis model without the outliers
-newdf <- newdf[!is.na(newdf$student_bin),]
-#student subgroup analysis without outliers:
-#student ES = 0.4275, nonstudent = 0.3894, between groups p-value = 0.2172
-m_studentsubgroup.nooutliers <- metagen(ES,
-                             data=newdf,
-                             lower = lowCI,
-                             upper = highCI,
-                             byvar = student_bin,
-                             studlab=paste(StudyID),
-                             comb.fixed = FALSE,
-                             comb.random = TRUE,
-                             method.tau = "SJ",
-                             hakn = TRUE,
-                             prediction=TRUE,
-                             sm="SMD")
-
-
 # SUBGROUP ANALYSIS #2: age as continuous regressor: beta = -0.0018, p-value = 0.6339 :(
 # Histogram shows we don't have enough variability in MeanAge to quantify framing effect as a function of Age, this is verified in past meta analyses
 # "Age differences are rarely tested systematically in framing experiments and thus the relevant information for a meta-analysis is missing", Kuhburger 1998
@@ -169,7 +121,8 @@ m_studentsubgroup.nooutliers <- metagen(ES,
 
 # SUBGROUP ANALYSIS #3: gender
 # estimate = -0.1009, p-value = 0.4343, R^2=0.00%
-metareg.gender <- metareg(m_RE,PropMales) 
+metareg.genderInteract <- metareg(m_RE,PropMales) 
+metareg.genderInteract <- metareg(m_RE,PropMales * MortalVnonMortal) 
 
 # SUBGROUP ANALYSIS #4: between versus within manipulation differences (between = 1, within = 0)
 #between = 0.5032; within = 0.4988 (test for group diffs p-val = 0.9439). More heterogeneity (I^2 for within...
@@ -191,8 +144,8 @@ m_betweenwithinsubgroup <- metagen(ES,
 
 withindf <- df[ which(df$betweeen_within_bin==0), ]
 betweendf <- df[ which(df$betweeen_within_bin==1), ]
-ggplot(data=betweendf, aes(ES)) + geom_histogram() + labs(title="Between-subjects Design Effect Sizes", x = "Effect Size") + theme(plot.title = element_text(hjust = 0.5))
-ggplot(data=withindf, aes(ES)) + geom_histogram() + labs(title="Within-subjects Design Effect Sizes", x = "Effect Size") + theme(plot.title = element_text(hjust = 0.5))
+#ggplot(data=betweendf, aes(ES)) + geom_histogram() + labs(title="Between-subjects Design Effect Sizes", x = "Effect Size") + theme(plot.title = element_text(hjust = 0.5))
+#ggplot(data=withindf, aes(ES)) + geom_histogram() + labs(title="Within-subjects Design Effect Sizes", x = "Effect Size") + theme(plot.title = element_text(hjust = 0.5))
 
 #Determine if the between vs within null effect is due to outliers: defined as a study's confidence interval being outside
 #the confidence interval of the pooled effect
@@ -202,8 +155,6 @@ newdf <- df[!m_RE$studlab %in% c(as.character(outliersdf$StudyID)),]
 #make new RE meta analysis model without the outliers
 newdf <- newdf[!is.na(newdf$betweeen_within_bin),]
 
-#When we remove outliers design subgroup differences are now significant!!!!!!!
-#between = 0.4428, within = 0.3158 (still more heterogeneity). between groups difference: p-value = 0.0014!
 m_betweenwithinsubgroup.nooutliers <- metagen(ES,
                            data=newdf,
                            lower = lowCI,
