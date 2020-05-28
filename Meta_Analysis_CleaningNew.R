@@ -16,7 +16,6 @@ JJdf = JJdf[,1:29]
 Tdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "TaraEffectSizes")
 
 Sdf <- read_excel("/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/ValenceFramingMetaAnalysis.xlsx", sheet = "SiyuanEffectSizes")
-Sdf = Sdf[1:54,]
 
 df = rbind(Kdf, Rdf, JJdf, Tdf, Sdf)
 
@@ -191,9 +190,6 @@ df = df %>% mutate(highCITrue = ifelse(ESTrue <0, -(df$lowCI), highCI))
 
 df = df %>% mutate(ESTrue = -ESTrue, lowCITrue = -highCITrue, highCITrue = -lowCITrue)
 
-df[189, 2] = '1993' #need to add the publication data to 'Tindale' entry
-#df[9,28] = "1" #Stark 2017 article is a main effect
-df[134,11] = "306" #this study actually had 306 subjects, not 360
-df[133,11] = "306"
+df = df %>% mutate( esvar = ((abs((highCI-lowCI)/2)/1.96)^2), esvarTrue = ((abs((highCITrue-lowCITrue)/2)/1.96)^2) )
 
 save(df, file = "/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/df.RData")
