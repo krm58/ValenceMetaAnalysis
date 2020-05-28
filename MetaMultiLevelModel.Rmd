@@ -1,0 +1,50 @@
+---
+title: "Meta Analysis Multi-Level Model"
+author: "Rose Graves"
+date: "5/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(metafor)
+```
+
+Load Data
+```{r}
+
+load("~/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/df.RData")
+
+```
+
+Carrying out the Model with StudyID as the third level
+```{r}
+
+
+
+full.model <- rma.mv(data = df, y = ES,
+                    V = esvar,
+                     random = ~ 1 | Authors/StudyID, 
+                     tdist = TRUE,
+                     method = "REML")
+
+summary(full.model)
+
+```
+
+Carry out the Model with Sample as the third level
+```{r}
+
+
+full.model1 <- rma.mv(data = df, y = ES,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML")
+
+summary(full.model1)
+
+```
+
+
