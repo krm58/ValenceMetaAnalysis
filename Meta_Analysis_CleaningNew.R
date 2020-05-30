@@ -128,8 +128,6 @@ df <- df%>%dplyr::mutate(student_bin = ifelse((Authors == "Li" & PubYear ==1995 
 dfADP_ADPModif <- df%>% dplyr::filter( grepl('ADPModif|ADP', MoralJudgeFactor))
 dfADP_ADPModif <- dfADP_ADPModif%>% dplyr::mutate(moraljudge_bin = ifelse(MoralJudgeFactor =="ADP", 1,0))
 
-save(dfADP_ADPModif, file = "/Users/RoseGraves/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/dfADP_ADPModif.RData")
-
 #------- Moral Judgement: ADP & Modified ADP v. Other
 df <- df%>% dplyr::mutate(ADPmodif_other_bin = ifelse( grepl('ADPModif|ADP', MoralJudgeFactor),1,0))
 
@@ -176,19 +174,70 @@ df$ES <- as.numeric(df$ES)
 df$MeanAge = as.numeric(df$MeanAge)
 df$SdAge = as.numeric(df$SdAge)
 df$PropMales = as.numeric(df$PropMales)
+df$Consistent = as.numeric(df$Consistent)
 
 
 #------- ES True Direction 
 
-df = df %>% mutate(ESTrue = ifelse((ES <=0 & Consistent ==1), df$ES, ifelse((ES>0 & Consistent==1), -(df$ES),df$ES )))
+df = df %>% mutate(ESTrue = ES)
+df = df %>% mutate(ESTrue = ifelse((Consistent ==1), abs(df$ESTrue), df$ES)) %>%
+  mutate(ESTrue = ifelse((Consistent==0), -abs(df$ES),df$ES))
+                                   
+df = df %>% mutate(lowCITrue = lowCI, highCITrue = highCI)
 
-df = df %>% mutate(lowCITrue = ifelse(ESTrue <0, -(df$highCI), lowCI))
-df = df %>% mutate(highCITrue = ifelse(ESTrue <0, -(df$lowCI), highCI))
+for(i in 1:dim(df)[1]){
+  if(df$Consistent[i]==1 & df$highCITrue[i]<0 & df$lowCITrue[i]<0){
+    
+    k = df$highCITrue[i]
+    j = df$lowCITrue[i]
+    
+    df$highCITrue[i] = abs(j)
+    df$lowCITrue[i]=  abs(k)
+    
+  }
+}
+
+for(i in 1:dim(df)[1]){
+  if(df$Consistent[i]==1 & isTRUE(!(df$highCITrue[i] > df$ESTrue[i]) ) ){
+    
+    k = df$highCITrue[i]
+    j = df$lowCITrue[i]
+    
+    df$highCITrue[i] = -(j)
+    df$lowCITrue[i]=  -(k)
+    
+  }
+}
+
+
+
+for(i in 1:dim(df)[1]){
+  if(df$Consistent[i]==0 & df$highCITrue[i]>0 & df$lowCITrue[i]>0){
+    
+    k = df$highCITrue[i]
+    j = df$lowCITrue[i]
+    
+    df$highCITrue[i] = -(j)
+    df$lowCITrue[i]=  -(k)
+    
+  }
+}
+
+for(i in 1:dim(df)[1]){
+  if(df$Consistent[i]==0 & isTRUE((df$lowCITrue[i] >= df$ESTrue[i]) ) ){
+    
+    k = df$highCITrue[i]
+    j = df$lowCITrue[i]
+    
+    df$highCITrue[i] = abs(j)
+    df$lowCITrue[i]=  abs(k)
+    
+  }
+}
+
+
 
 #-------- lol now switch it back 
-
-
-df = df %>% mutate(ESTrue = -ESTrue, lowCITrue = -highCITrue, highCITrue = -lowCITrue)
 
 df = df %>% mutate( esvar = ((abs((highCI-lowCI)/2)/1.96)^2), esvarTrue = ((abs((highCITrue-lowCITrue)/2)/1.96)^2) )
 
