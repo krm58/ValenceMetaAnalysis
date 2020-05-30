@@ -18,33 +18,164 @@ load("~/Documents/Duke- Semester Spring 2020/Philosphy Independent Study/df.RDat
 
 ```
 
-Carrying out the Model with StudyID as the third level
+
+### Carry out the Model with Sample as the third level (Absolute Value Effect Size)
+
 ```{r}
 
+df_no_inter = df %>% filter(MainEffectvInteraction==1) #Removing all interaction terms
 
-
-full.model <- rma.mv(data = df, y = ES,
-                    V = esvar,
-                     random = ~ 1 | Authors/StudyID, 
-                     tdist = TRUE,
-                     method = "REML")
-
-summary(full.model)
-
-```
-
-Carry out the Model with Sample as the third level
-```{r}
-
-
-full.model1 <- rma.mv(data = df, y = ES,
+full.modelAbs <- rma.mv(data = df_no_inter, y = ES,
                     V = esvar,
                      random = ~ 1 | Authors/`Sample#`, 
                      tdist = TRUE,
                      method = "REML")
 
-summary(full.model1)
+summary(full.modelAbs)
 
 ```
 
+
+### Carry out the Model with Sample as the third level (True Direction of Effect Size)
+
+```{r}
+
+full.modelTrue <- rma.mv(data = df_no_inter, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML")
+
+summary(full.modelTrue)
+
+```
+
+### Mortal v. NonMortal Absolute 
+
+Comparing sceniros that involed possible loss of human lives (mortal), compared to sceniros that did not. 
+
+#### Absolute Value of ES
+
+```{r}
+
+df_no_inter$MortalVnonMortal = as.numeric(df_no_inter$MortalVnonMortal)
+
+mortalvnon.modelAbs <- rma.mv(data = df_no_inter, y = ES,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML",
+                    mods = ~MortalVnonMortal)
+
+summary(mortalvnon.modelAbs)
+
+ggplot(data = df_no_inter, aes(x = ES)) + geom_histogram() + facet_grid(.~MortalVnonMortal) + xlab("Effect Size")
+
+
+```
+
+#### True Value ES
+
+```{r}
+
+mortalvnon.modelTrue <- rma.mv(data = df_no_inter, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML",
+                    mods = ~MortalVnonMortal)
+
+summary(mortalvnon.modelTrue)
+
+ggplot(data = df_no_inter, aes(x = ESTrue)) + geom_histogram() + facet_grid(.~MortalVnonMortal) + xlab("Effect Size")
+
+
+```
+
+NA cases were reserved for when there multiple scenarios presented to participants and some involved life and death while others did not. Also in the case of Alien lives. 
+
+### ADP v. Other
+
+This looks at scennios that were specifically the original ADP problem, and compares them to all other scenarios.
+
+#### Absolute Value of ES
+
+```{r}
+
+df_no_inter$ADP_other_bin = as.numeric(df_no_inter$ADP_other_bin)
+
+ADPother.modelAbs <- rma.mv(data = df_no_inter, y = ES,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML",
+                    mods = ~ADP_other_bin)
+
+summary(ADPother.modelAbs)
+
+ggplot(data = df_no_inter, aes(x = ES)) + geom_histogram() + facet_grid(.~ADP_other_bin) + xlab("Effect Size")
+
+```
+
+#### True Value ES
+
+
+```{r}
+
+ADPother.modelTrue <- rma.mv(data = df_no_inter, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML",
+                    mods = ~ADP_other_bin)
+
+summary(ADPother.modelTrue)
+
+ggplot(data = df_no_inter, aes(x = ESTrue)) + geom_histogram() + facet_grid(.~ADP_other_bin) + xlab("Effect Size")
+
+```
+
+### ADP and ADPmodif v. Other
+
+Here we are looking to see if the ADPmodif 
+
+#### Absolute Value of ES
+
+```{r}
+
+df_no_inter_adp_adpmodif <- df_no_inter%>% dplyr::filter( grepl('ADPModif|ADP', MoralJudgeFactor))
+df_no_inter_adp_adpmodif <- df_no_inter_adp_adpmodif%>% dplyr::mutate(moraljudge_bin = ifelse(MoralJudgeFactor =="ADP", 1,0))
+df_no_inter_adp_adpmodif$moraljudge_bin = as.numeric(df_no_inter_adp_adpmodif$moraljudge_bin)
+
+ADPmod.modelAbs <- rma.mv(data = df_no_inter_adp_adpmodif, y = ES,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML",
+                    mods = ~moraljudge_bin)
+
+summary(ADPother.modelAbs)
+
+ggplot(data = df_no_inter_adp_adpmodif, aes(x = ES)) + geom_histogram() + facet_grid(.~MoralJudgeFactor) + xlab("Effect Size")
+
+
+```
+
+#### True Value ES
+
+
+```{r}
+
+ADPmod.modelTrue <- rma.mv(data = df_no_inter_adp_adpmodif, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML",
+                    mods = ~moraljudge_bin)
+
+summary(ADPother.modelAbs)
+
+ggplot(data = df_no_inter_adp_adpmodif, aes(x = ESTrue)) + geom_histogram() + facet_grid(.~MoralJudgeFactor) + xlab("Effect Size")
+
+```
 
