@@ -1,0 +1,254 @@
+---
+title: "Meta Analysis Multi-Level Model"
+author: "Original: Rose Graves, Edited: Kelsey McDonald"
+date: "6/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(dplyr)
+library(meta)
+library(dmetar)
+library(metafor)
+library(ggplot2)
+```
+
+Load Data
+```{r}
+
+load("C:/Users/krmcd/OneDrive - Duke University/Duke/Walter Sinnot-Armstrong/Meta Analysis/Analysis_Publication/ValenceMetaAnalysis-master/df.RData")
+
+#this file now includes the online/in-person boolean for included studies
+mydata2 <- read.csv("C:/Users/krmcd/OneDrive - Duke University/Duke/Walter Sinnot-Armstrong/Meta Analysis/Analysis_Publication/mydata2.csv") 
+
+df$OnlineBool <- mydata2$OnlineSubjBool
+```
+
+### Make histogram of publication years to show time-trending interest on framing effects
+```{r 'setup', echo = FALSE, cache = FALSE}
+
+#trimdf <- df[!duplicated(df[c("Authors")]),]
+#trimdf$PubYear <- as.numeric(trimdf$PubYear)
+#ggplot(data=trimdf, aes(x=PubYear)) + geom_histogram() + 
+#  labs(title="Empirical Articles on Framing Effects") +
+#  theme(plot.title = element_text(hjust = 0.5)) +
+#  labs(x="Year of Publication", y="Number of Publications")
+
+```
+
+
+
+### Carry out the Model with Sample as the third level (True Direction of Effect Size) for between-subjects and within-subjects design separately
+
+```{r}
+df_no_inter = df %>% filter(MainEffectvInteraction==1) #Removing all interaction terms
+df_between = df %>% filter(betweeen_within_bin==1)
+df_within = df %>% filter(betweeen_within_bin==0)
+
+full.modelTrue.between <- rma.mv(data = df_between, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML")
+
+summary(full.modelTrue.between)
+rma(data=df_between, y = ESTrue, esvar) #to calculate I2 and tau2
+
+
+
+full.modelTrue.within <- rma.mv(data = df_within, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML")
+summary(full.modelTrue.within)
+rma(data=df_within, y = ESTrue, esvar) ##to calculate I2 and tau2
+```
+
+### Make forest plot (Note for between-subs: save to pdf that is 8.5 x 30 inches to make sure labels are legible)
+```{r}
+forest(full.modelTrue.between, slab = df_between$StudyID, annotate=FALSE, cex=0.5, cex.lab=0.5, cex.axis=0.5, ylim=c(-1.5,285),top=7, mlab="Random Effects Estimate, Between-Subjects Studies", xlab="Cohen's d Effect Size")
+
+forest(full.modelTrue.within, slab = df_within$StudyID, annotate=FALSE, mlab="Random Effects Estimate, Within-Subjects Studies", xlab="Cohen's d Effect Size")
+```
+
+#### Subgroup Analyses for Between-Subjects Dataset:
+
+
+
+
+### Subgroup Analysis: Student vs Non-Student:
+```{r}
+df_between$student_bin <- factor(df_between$student_bin)
+
+full.modelTrue.student <- rma.mv(data = df_between, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML",
+                    mods = ~student_bin)
+
+summary(full.modelTrue.student)
+
+```
+
+### Subgroup Analysis: Online vs In-Person Studies
+```{r}
+
+full.modelTrue.onlinePerson <- rma.mv(data = df_between, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML",
+                    mods = ~OnlineBool)
+
+summary(full.modelTrue.onlinePerson)
+
+```
+
+### Subgroup Analysis: Gender:
+```{r}
+
+full.modelTrue.gender <- rma.mv(data = df_between, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     tdist = TRUE,
+                     method = "REML",
+                    mods = ~PropMales)
+
+summary(full.modelTrue.gender)
+
+```
+
+### Subgroup Analysis: Between vs within-subjects design: (between = 1, within = 0)
+### This is not relevant since we're formally separating the datasets by this variable in the manuscript
+```{r}
+#df$betweeen_within_bin <- factor(df$betweeen_within_bin)
+#df <- df[!is.na(df$betweeen_within_bin),]
+#full.modelTrue.design <- rma.mv(data = df, y = ESTrue,
+#                    V = esvar,
+#                     random = ~ 1 | Authors/`Sample#`, 
+#                     tdist = TRUE,
+#                     method = "REML",
+#                    mods = ~betweeen_within_bin)
+
+#summary(full.modelTrue.design)
+
+```
+
+
+### Mortal v. NonMortal Absolute 
+
+Comparing scenarios that involved possible loss of human lives (mortal), compared to scenarios that did not. 
+
+```{r}
+df_between$MortalVnonMortal <- as.integer(df_between$MortalVnonMortal)
+mortalvnon.modelTrue <- rma.mv(data = df_between, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     test = "z",
+                     method = "REML",
+                    mods = ~MortalVnonMortal)
+
+summary(mortalvnon.modelTrue)
+
+#ggplot(data = df_no_inter, aes(x = ESTrue)) + geom_histogram() + facet_grid(.~MortalVnonMortal) + xlab("Effect Size")
+
+
+```
+
+NA cases were reserved for when there multiple scenarios presented to participants and some involved life and death while others did not. Also in the case of Alien lives. 
+
+### ADP v. Other
+
+This looks at scenarios that were specifically the original ADP problem, and compares them to all other scenarios.
+
+#### Absolute Value of ES
+
+```{r}
+
+#df_no_inter$ADP_other_bin = as.numeric(df_no_inter$ADP_other_bin)
+
+#ADPother.modelAbs <- rma.mv(data = df_no_inter, y = ES,
+#                    V = esvar,
+#                     random = ~ 1 | Authors/`Sample#`, 
+#                     tdist = TRUE,
+#                     method = "REML",
+#                    mods = ~ADP_other_bin)
+
+#summary(ADPother.modelAbs)
+
+#ggplot(data = df_no_inter, aes(x = ES)) + geom_histogram() + facet_grid(.~ADP_other_bin) + xlab("Effect Size")
+
+```
+
+#### True Value ES
+
+```{r}
+df_between$ADP_other_bin = as.numeric(df_between$ADP_other_bin)
+ADPother.modelTrue <- rma.mv(data = df_between, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     test = "z",
+                     method = "REML",
+                    mods = ~ADP_other_bin)
+
+summary(ADPother.modelTrue)
+
+#ggplot(data = df_no_inter, aes(x = ESTrue)) + geom_histogram() + facet_grid(.~ADP_other_bin) + xlab("Effect Size")
+
+```
+
+### ADP and ADPmodif v. Other
+
+```{r}
+
+df_adp_adpmodif <- df_between%>% dplyr::filter( grepl('ADPModif|ADP', MoralJudgeFactor))
+df_adp_adpmodif <- df_adp_adpmodif%>% dplyr::mutate(moraljudge_bin = ifelse(MoralJudgeFactor =="ADP", 1,0))
+df_adp_adpmodif$moraljudge_bin = as.numeric(df_adp_adpmodif$moraljudge_bin)
+
+
+ADPmodmodel <- rma.mv(data = df_adp_adpmodif, y = ESTrue,
+                    V = esvar,
+                     random = ~ 1 | Authors/`Sample#`, 
+                     test = "z",
+                     method = "REML",
+                    mods = ~moraljudge_bin)
+
+summary(ADPmodmodel)
+
+#ggplot(data = df_no_inter_adp_adpmodif, aes(x = ESTrue)) + geom_histogram() + facet_grid(.~MoralJudgeFactor) + xlab("Effect Size")
+
+```
+
+```{r}
+m_RE <- metagen(ESTrue,
+                data=df_between,
+                lower = lowCI,
+                upper = highCI,
+                studlab=paste(StudyID),
+                comb.fixed = FALSE,
+                comb.random = TRUE,
+                method.tau = "SJ",
+                hakn = TRUE,
+                prediction=TRUE,
+                sm="SMD")
+```
+
+### Assess publication bias
+```{r}
+funnel(m_RE, xlab="Cohen's d", contour=c(.95,.975,.99), col.contour=c("darkgreen","green","lightgreen")) +
+  legend("bottomright", c("p < 0.05", "p < 0.025", "p < 0.01"),bty = "n",
+         fill=c("darkgreen","green","lightgreen"))
+```
+
+### Run Egger's Test and trimfill procedure
+```{r}
+eggers.test(x=m_RE)
+trimfill(m_RE)
+```
+
+
+
