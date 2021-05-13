@@ -64,66 +64,6 @@ df <- df%>% dplyr::mutate(student_bin = ifelse( !grepl('Student|Students|student
 
 df <- df%>%dplyr::mutate(student_bin = ifelse((Authors == "Li" & PubYear ==1995 )| (Authors == "Druckman 2008"&PubYear ==2008), NA,df$student_bin ))
 
-#-------Create a new column indcating The type of moral judgement
-#df <- df %>% 
-#  mutate_all(funs(str_replace(., "Asian Disease Problem", "ADP"))) %>%
-#  mutate_all(funs(str_replace(., "Similar to ADP", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "similar to ADP", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "Modified Asian Disease Problem", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP-like for human like outcomes", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP-like for human lifes", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP-like, but smallpox", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP-like war problem", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "4 types of ADP-like problems", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP-like human life", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP-like human life", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "life saving risky scenario", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "Modified ADP (replace disease with war)", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "Modified ADP (replace with AIDS victims)", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP 600", "ADP")))%>%
-#  mutate_all(funs(str_replace(., "Asian Disease", "ADP")))%>%
-#  mutate_all(funs(str_replace(., "Fatal Disease Problem", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP (w/ 3-6 kin)", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP-like (Coal Mining Problem 1)", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP 6 relatives", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP-like (ADP, civil defense problem, and cancer treatment problem)", "ADPModif")))%>% mutate_all(funs(str_replace(., "Asian Disease & Modified Asian Disease", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "Asian DIsease Problem Unspecified #", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "Asian DIsease problem", "ADP")))%>%
-#  mutate_all(funs(str_replace(., "Modified ADP", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP & ADPModif", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "West Nile Virus task (augmented ADP)", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP (augmented)", "ADPModif")))%>%
-#  mutate_all(funs(str_replace(., "ADP-augmented", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "West Nile Virus task (augmented ADP)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP-like military example", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP-like cancer scenario", "ADPModifMedical"))) %>%
-#  mutate_all(funs(str_replace(., "ADP-like for medical decision", "ADPModifMedical"))) %>%
-#  mutate_all(funs(str_replace(., "ADP-like for lives", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADPModif (replace disease with war)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADPModif (replace with AIDS victims)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP0", "ADP 6000"))) %>%
-#  mutate_all(funs(str_replace(., "ADP-like (Coal Mining Problem 1)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP & Modified Asian Disease", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "Trolley Problem 15", "Trolly Problem"))) %>%
-#  mutate_all(funs(str_replace(., "Trolley Problem 5", "Trolly Problem"))) %>%
-#  mutate_all(funs(str_replace(., "trolly problems", "Trolly Problem"))) %>%
-#  mutate_all(funs(str_replace(., "ADP-like military example", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP-like military example", "ADPModif")))  %>%
-#  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif")))  %>%
-#  mutate_all(funs(str_replace(., "ADP-like (Coal Mining Problem 1)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP and oil tanker ADP-like problem", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADPModif (replace with AIDS victims)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADPModif (replace disease with war)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP 120", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP-like (Coal Mining Problem 1)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "West Nile Virus task (augmented ADP)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP (Alien Lives)", "ADPModif"))) %>%
-#  mutate_all(funs(str_replace(., "ADP (augmented)", "ADPModif")))
-
-
 #-------- Moral Judgement: ADP v Modified ADP
 dfADP_ADPModif <- df%>% dplyr::filter( grepl('ADPModif|ADP', MoralJudgeFactor))
 dfADP_ADPModif <- dfADP_ADPModif%>% dplyr::mutate(moraljudge_bin = ifelse(MoralJudgeFactor =="ADP", 1,0))
